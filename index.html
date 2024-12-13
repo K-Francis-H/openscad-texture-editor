@@ -6,7 +6,7 @@
 			class Canvas {
 				constructor(ids={}, virtualSize){
 					//check ids
-					if(!ids.canvas || !ids.exportButton){
+					if(!ids.canvas || !ids.exportButton || !ids.clearButton || !ids.toggleGridButton){
 						throw new Error("missing ids!");
 					}
 					this.canvas = document.getElementById(ids.canvas);
@@ -26,6 +26,8 @@
 						}
 					}
 
+					this.showGrid = false;
+
 					//for handling mousemove state
 					this.mousedown = false
 
@@ -35,6 +37,12 @@
 
 					this.exportButton = document.getElementById(ids.exportButton);
 					this.exportButton.addEventListener("click", this.handleExportButtonClick(this));
+
+					this.clearButton = document.getElementById(ids.clearButton);
+					this.clearButton.addEventListener("click", this.handleClearButtonClick(this));
+
+					this.toggleGridButton = document.getElementById(ids.toggleGridButton);
+					this.toggleGridButton.addEventListener("click", this.handleToggleGridButtonClick(this));
 				
 					//TODO add color select
 					//associate color with a number
@@ -55,8 +63,30 @@
 					}
 				}
 
+				handleClearButtonClick(self){
+					return function(event){
+						self.clear();
+					}
+				}
+
+				handleToggleGridButtonClick(self){
+					return function(event){
+						self.showGrid = !self.showGrid;
+						self.renderGrid();
+						if(!self.showGrid){
+							//clear and redraw the state
+							self.renderFromState();
+						}
+					}
+				}
+
 				handleMouseDownEvent(self){
 					return function(event){
+						//skip if not left mouse button click
+						if(event.button !== 0){
+							return;
+						}
+
 						self.mousedown = true;
 						let rect = event.target.getBoundingClientRect();
 						let x = event.clientX - rect.left;
@@ -125,10 +155,14 @@
 					this.pixh = this.REAL_HEIGHT / this.virtualSize;
 				}
 
-				clear(color="black"){
+				clear(color="black", clearState=true){
+					//reset canvas
 					this.ctx.fillStyle = color;
 					this.ctx.fillRect(0,0,this.REAL_WIDTH,this.REAL_HEIGHT);
 
+					if(!clearState){
+						return;
+					}
 					//reset state
 					this.state = [];
 					for(let i=0; i < this.virtualSize; i++){
@@ -171,12 +205,54 @@
 					return tex;
 				}
 
+				renderGrid(){
+					if(!this.showGrid){
+						return;
+					}
+
+					this.ctx.strokeStyle = "white";
+					this.ctx.lineWidth = 1;
+
+					for(let i=0; i < this.virtualSize; i++){
+						for(let j=0; j < this.virtualSize; j++){
+							
+							//vertical lines
+							this.ctx.beginPath();
+							this.ctx.moveTo(i*this.pixw,j*this.pixh);
+							this.ctx.lineTo(i*this.pixw,this.REAL_HEIGHT);
+							this.ctx.stroke();
+
+							//horizontal lines
+							this.ctx.beginPath();
+							this.ctx.moveTo(i*this.pixw,j*this.pixh);
+							this.ctx.lineTo(this.REAL_WIDTH,j*this.pixh);
+							this.ctx.stroke();							
+						}
+					}
+				}
+
+				renderFromState(){
+					//clear canvas but preserve state
+					this.clear("black", false);
+
+					for(let i=0; i < this.state.length; i++){
+						for(let j=0; j < this.state[i].length; j++){
+							if(this.state[i][j] > 0){
+								//TODO then determine which color...
+								this.paintPixel(i,j);
+							}
+						}
+					}
+				}
+
 			}//end class Canvas
 
 			document.addEventListener("DOMContentLoaded", function(){
 				const ids = {
 					canvas: "canvas",
-					exportButton: "export-button"
+					exportButton: "export-button",
+					clearButton: "clear-button",
+					toggleGridButton: "show-grid"
 				};
 				const c = new Canvas(ids, 20);
 				c.clear();
@@ -195,7 +271,10 @@
 		<title>OpenSCAD Texture Editor</title>
 		<canvas id="canvas" width="400" height="400">HTML5 Canvas Not Supported!</canvas>
 		<div>
+			<!-- TODO add color picker, color value setting (for different heights in output), canvas pixel/texture size select -->
 			<button id="export-button">Export</button>
+			<button id="clear-button">Clear</button>
+			<button id="show-grid">Toggle Grid</button>
 		</div>
 	</body>
 </html>
