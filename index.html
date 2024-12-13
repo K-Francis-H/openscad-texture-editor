@@ -4,8 +4,12 @@
 		<meta charset="utf-8">
 		<script>
 			class Canvas {
-				constructor(canvasId, virtualSize){
-					this.canvas = document.getElementById("canvas");
+				constructor(ids={}, virtualSize){
+					//check ids
+					if(!ids.canvas || !ids.exportButton){
+						throw new Error("missing ids!");
+					}
+					this.canvas = document.getElementById(ids.canvas);
 					this.REAL_WIDTH = this.canvas.width;
 					this.REAL_HEIGHT = this.canvas.height;
 					this.ctx = this.canvas.getContext("2d");
@@ -22,40 +26,69 @@
 						}
 					}
 
-					//probably want a
-					var self = this;
-					
-					self.canvas.addEventListener("click", this.handleCanvasClickEvent(this));
+					//for handling mousemove state
+					this.mousedown = false
+
+					this.canvas.addEventListener("mousedown", this.handleMouseDownEvent(this));
+					this.canvas.addEventListener("mousemove", this.handleMouseMoveEvent(this));
+					this.canvas.addEventListener("mouseup", this.handleMouseUpEvent(this));
+
+					this.exportButton = document.getElementById(ids.exportButton);
+					this.exportButton.addEventListener("click", this.handleExportButtonClick(this));
+				
+					//TODO add color select
+					//associate color with a number
 				}
 
-				//a closure to make sure we have access to the class 'this' not the this.canvas 'this'
-				handleCanvasClickEvent(self){
+				/*****************************
+				 * CLOSURES for handling events on HTML elements.
+				 * 'this' inside these elemnt event handlers refers to the HTML elements, not our Canvas class
+				 * so we pass our Canvas 'this' into these closures as 'self' in order to
+				 * access the fields and methods of the Canvas object
+				 */
+
+				handleExportButtonClick(self){
 					return function(event){
-						let rect = event.target.getBoundingClientRect();
-						let x = event.clientX - rect.left;
-						let y = event.clientY - rect.top;
-						console.log(x);
-						console.log(y);
-						console.log(this);
-						console.log(self);
-						console.log(self.calcVirtualPixel(x,y));
-						let coords = self.calcVirtualPixel(x,y);
-						self.paintPixel(coords[0], coords[1])
+						let code = self.exportOpenSCAD();
+						console.log(code);
+						//TODO paste into text area or make download .scad file
 					}
 				}
 
-				/*handleClickEvent(event){
-					//get the canvas x,y
-					//calc the virtual position and paint the pixel
-					let rect = event.target.getBoundingClientRect();
-					let x = event.clientX - rect.left;
-					let y = event.clientY - rect.top;
-					console.log(x);
-					console.log(y);
-					console.log(this);
-					console.log(self);
-					console.log(self.calcVirtualPixel(x,y));
-				}*/
+				handleMouseDownEvent(self){
+					return function(event){
+						self.mousedown = true;
+						let rect = event.target.getBoundingClientRect();
+						let x = event.clientX - rect.left;
+						let y = event.clientY - rect.top;
+
+						let coords = self.calcVirtualPixel(x,y);
+						self.paintPixel(coords[0], coords[1]);
+					};
+				}
+
+				handleMouseMoveEvent(self){
+					return function(event){
+						if(self.mousedown){
+							let rect = event.target.getBoundingClientRect();
+							let x = event.clientX - rect.left;
+							let y = event.clientY - rect.top;
+
+							let coords = self.calcVirtualPixel(x,y);
+							self.paintPixel(coords[0], coords[1]);
+						}
+					}
+				}
+
+				handleMouseUpEvent(self){
+					return function(event){
+						self.mousedown = false;
+					}
+				}
+
+				/********************
+				 * END CLOSURES
+				 */
 
 				calcVirtualPixel(xpos, ypos){
 					if(xpos < 0 || ypos < 0 || xpos >= this.REAL_WIDTH || ypos >= this.REAL_HEIGHT){
@@ -110,25 +143,59 @@
 					let realx = xpos * this.pixw;
 					let realy = ypos * this.pixh;
 
-					console.log(realx);
-					console.log(realy);
+					//console.log(realx);
+					//console.log(realy);
 
 					this.ctx.fillStyle = color;
 					this.ctx.fillRect(realx, realy, this.pixw, this.pixh);
+
+					//TODO allow multiple colors to mean different heights
+					if(color === "white"){
+						this.state[xpos][ypos] = 1;
+					}else{
+						this.state[xpos][ypos] = 0;
+					}
 				}
-			}
+
+				exportOpenSCAD(){
+					let tex = "tex = [\n";
+					for(let i=0; i < this.state.length; i++){
+						let row = '\t[';
+						for(let j=0; j < this.state[i].length; j++){
+							row += this.state[i][j] + ",";
+						}
+						row += '],\n';
+						tex += row;
+					}
+					tex += ']';
+					return tex;
+				}
+
+			}//end class Canvas
 
 			document.addEventListener("DOMContentLoaded", function(){
-				const c = new Canvas("canvas", 20);
+				const ids = {
+					canvas: "canvas",
+					exportButton: "export-button"
+				};
+				const c = new Canvas(ids, 20);
 				c.clear();
 
-				c.paintPixel(0,0);
-				c.paintPixel(10,10);
+				//c.paintPixel(0,0);
+				//c.paintPixel(10,10);
+
+				//TODO add ability to resize
+				//add multiple colors, heights
+				//add fill bucket
+				//add export button, textarea for fetching code
 			});
 		</script>
 	</head>
 	<body>
 		<title>OpenSCAD Texture Editor</title>
 		<canvas id="canvas" width="400" height="400">HTML5 Canvas Not Supported!</canvas>
+		<div>
+			<button id="export-button">Export</button>
+		</div>
 	</body>
 </html>
