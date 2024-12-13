@@ -160,6 +160,10 @@
 					this.ctx.fillStyle = color;
 					this.ctx.fillRect(0,0,this.REAL_WIDTH,this.REAL_HEIGHT);
 
+					if(this.showGrid){
+						this.renderGrid();
+					}
+
 					if(!clearState){
 						return;
 					}
@@ -176,9 +180,6 @@
 				paintPixel(xpos, ypos, color="white"){
 					let realx = xpos * this.pixw;
 					let realy = ypos * this.pixh;
-
-					//console.log(realx);
-					//console.log(realy);
 
 					this.ctx.fillStyle = color;
 					this.ctx.fillRect(realx, realy, this.pixw, this.pixh);
