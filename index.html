@@ -6,7 +6,7 @@
 			class Canvas {
 				constructor(ids={}, virtualSize){
 					//check ids
-					if(!ids.canvas || !ids.exportButton || !ids.clearButton || !ids.toggleGridButton){
+					if(!ids.canvas || !ids.exportButton || !ids.clearButton || !ids.toggleGridButton || !ids.outputTextarea){
 						throw new Error("missing ids!");
 					}
 					this.canvas = document.getElementById(ids.canvas);
@@ -43,6 +43,8 @@
 
 					this.toggleGridButton = document.getElementById(ids.toggleGridButton);
 					this.toggleGridButton.addEventListener("click", this.handleToggleGridButtonClick(this));
+
+					this.outputTextarea = document.getElementById(ids.outputTextarea);
 				
 					//TODO add color select
 					//associate color with a number
@@ -65,6 +67,12 @@
 					return function(event){
 						let code = self.exportOpenSCAD();
 						console.log(code);
+						self.outputTextarea.innerText = code;
+
+						//self.outputTextarea.select();
+						//self.outputTextarea.setSelectionRange(0,99999);
+
+						navigator.clipboard.writeText(code);
 						//TODO paste into text area or make download .scad file
 					}
 				}
@@ -109,13 +117,6 @@
 							let rect = event.target.getBoundingClientRect();
 							let x = event.clientX - rect.left;
 							let y = event.clientY - rect.top;
-
-							//if cursor exits canvas without mouseup, kill the event
-							//console.log("x: "+x+" y: "+y);
-							if( x < 0 || y < 0 || x > self.REAL_WIDTH || y > self.REAL_HEIGHT){
-								self.mousedown = false;
-								return;
-							}
 
 							let coords = self.calcVirtualPixel(x,y);
 							self.paintPixel(coords[0], coords[1]);
@@ -166,6 +167,8 @@
 					this.virtualSize = virtualSize;
 					this.pixw = this.REAL_WIDTH / this.virtualSize;
 					this.pixh = this.REAL_HEIGHT / this.virtualSize;
+
+					this.clear();
 				}
 
 				clear(color="black", clearState=true){
@@ -206,16 +209,17 @@
 				}
 
 				exportOpenSCAD(){
-					let tex = "tex = [\n";
+					let tex = 'tex = [\n';
 					for(let i=0; i < this.state.length; i++){
 						let row = '\t[';
 						for(let j=0; j < this.state[i].length; j++){
-							row += this.state[i][j] + ",";
+							//flip coords so we get correct orientation in OpenSCAD
+							row += this.state[j][i] + ",";
 						}
 						row += '],\n';
 						tex += row;
 					}
-					tex += ']';
+					tex += '];';
 					return tex;
 				}
 
@@ -266,18 +270,12 @@
 					canvas: "canvas",
 					exportButton: "export-button",
 					clearButton: "clear-button",
-					toggleGridButton: "show-grid"
+					toggleGridButton: "show-grid",
+					outputTextarea: "output-textarea"
 				};
 				const c = new Canvas(ids, 20);
 				c.clear();
-
-				//c.paintPixel(0,0);
-				//c.paintPixel(10,10);
-
-				//TODO add ability to resize
-				//add multiple colors, heights
-				//add fill bucket
-				//add export button, textarea for fetching code
+				
 			});
 		</script>
 	</head>
@@ -286,9 +284,12 @@
 		<canvas id="canvas" width="400" height="400">HTML5 Canvas Not Supported!</canvas>
 		<div>
 			<!-- TODO add color picker, color value setting (for different heights in output), canvas pixel/texture size select -->
-			<button id="export-button">Export</button>
-			<button id="clear-button">Clear</button>
-			<button id="show-grid">Toggle Grid</button>
+			<button id="export-button" title="Generate OpenSCAD code, show preview, and copy to clipboard">Export</button>
+			<button id="clear-button" title="Reset the canvas to black">Clear</button>
+			<button id="show-grid" title="Display a grid outlining individual pixels">Toggle Grid</button>
+			<div>
+				<pre id="output-textarea" cols=80 rows=20 title="OpenSCAD Output Preview"></pre>
+			</div>
 		</div>
 	</body>
 </html>
