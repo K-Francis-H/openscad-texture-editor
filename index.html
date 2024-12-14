@@ -48,6 +48,9 @@
 				
 					//TODO add color select
 					//associate color with a number
+					this.color = "white";
+					this.toggleColorButton = document.getElementById(ids.toggleColorButton);
+					this.toggleColorButton.addEventListener("click", this.handleToggleColorButton(this));
 
 					//prevents dragging mouse off of canvas and returning after mouseup
 					var self = this;
@@ -62,6 +65,12 @@
 				 * so we pass our Canvas 'this' into these closures as 'self' in order to
 				 * access the fields and methods of the Canvas object
 				 */
+
+				handleToggleColorButton(self){
+					return function(event){
+						self.color = self.color === "white" ? "black" : "white";
+					}
+				}
 
 				handleExportButtonClick(self){
 					return function(event){
@@ -193,15 +202,15 @@
 					}
 				}
 
-				paintPixel(xpos, ypos, color="white"){
+				paintPixel(xpos, ypos){
 					let realx = xpos * this.pixw;
 					let realy = ypos * this.pixh;
 
-					this.ctx.fillStyle = color;
+					this.ctx.fillStyle = this.color;
 					this.ctx.fillRect(realx, realy, this.pixw, this.pixh);
 
 					//TODO allow multiple colors to mean different heights
-					if(color === "white"){
+					if(this.color === "white"){
 						this.state[xpos][ypos] = 1;
 					}else{
 						this.state[xpos][ypos] = 0;
@@ -252,15 +261,19 @@
 				renderFromState(){
 					//clear canvas but preserve state
 					this.clear("black", false);
+					let currentColor = this.color;
 
 					for(let i=0; i < this.state.length; i++){
 						for(let j=0; j < this.state[i].length; j++){
 							if(this.state[i][j] > 0){
 								//TODO then determine which color...
+								this.color = "white";
 								this.paintPixel(i,j);
 							}
 						}
 					}
+
+					this.color = currentColor;
 				}
 
 			}//end class Canvas
@@ -271,7 +284,8 @@
 					exportButton: "export-button",
 					clearButton: "clear-button",
 					toggleGridButton: "show-grid",
-					outputTextarea: "output-textarea"
+					outputTextarea: "output-textarea",
+					toggleColorButton: "toggle-color-button"
 				};
 				const c = new Canvas(ids, 20);
 				c.clear();
@@ -287,6 +301,7 @@
 			<button id="export-button" title="Generate OpenSCAD code, show preview, and copy to clipboard">Export</button>
 			<button id="clear-button" title="Reset the canvas to black">Clear</button>
 			<button id="show-grid" title="Display a grid outlining individual pixels">Toggle Grid</button>
+			<button id="toggle-color-button">Toggle Color</button>
 			<div>
 				<pre id="output-textarea" cols=80 rows=20 title="OpenSCAD Output Preview"></pre>
 			</div>
