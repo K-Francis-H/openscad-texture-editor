@@ -6,7 +6,12 @@
 			class Canvas {
 				constructor(ids={}, virtualSize){
 					//check ids
-					if(!ids.canvas || !ids.exportButton || !ids.clearButton || !ids.toggleGridButton || !ids.outputTextarea){
+					if(	   !ids.canvas 
+						|| !ids.exportButton 
+						|| !ids.clearButton 
+						|| !ids.toggleGridButton 
+						|| !ids.outputTextarea 
+						|| !ids.toggleColorButton){
 						throw new Error("missing ids!");
 					}
 					this.canvas = document.getElementById(ids.canvas);
@@ -27,8 +32,6 @@
 					}
 
 					this.showGrid = false;
-
-					//for handling mousemove state
 					this.mousedown = false
 
 					this.canvas.addEventListener("mousedown", this.handleMouseDownEvent(this));
@@ -69,6 +72,10 @@
 				handleToggleColorButton(self){
 					return function(event){
 						self.color = self.color === "white" ? "black" : "white";
+
+						//this -> toggle color button element
+						this.style.color = self.color === "white" ? "black" : "white";
+						this.style.backgroundColor = self.color;
 					}
 				}
 
@@ -261,18 +268,22 @@
 				renderFromState(){
 					//clear canvas but preserve state
 					this.clear("black", false);
+
+					//save the current color
 					let currentColor = this.color;
 
+					//repaint state
 					for(let i=0; i < this.state.length; i++){
 						for(let j=0; j < this.state[i].length; j++){
 							if(this.state[i][j] > 0){
-								//TODO then determine which color...
+								//TODO then determine which color so we can have different heights
 								this.color = "white";
 								this.paintPixel(i,j);
 							}
 						}
 					}
 
+					//restore the current color
 					this.color = currentColor;
 				}
 
@@ -289,12 +300,15 @@
 				};
 				const c = new Canvas(ids, 20);
 				c.clear();
+
+				//show the default (empty) texture array
+				document.getElementById("output-textarea").innerText = c.exportOpenSCAD();
 				
 			});
 		</script>
 	</head>
-	<body>
-		<title>OpenSCAD Texture Editor</title>
+	<body style="background: #FFFFDD;">
+		<h1>OpenSCAD Texture Editor</h1>
 		<canvas id="canvas" width="400" height="400">HTML5 Canvas Not Supported!</canvas>
 		<div>
 			<!-- TODO add color picker, color value setting (for different heights in output), canvas pixel/texture size select -->
@@ -302,8 +316,11 @@
 			<button id="clear-button" title="Reset the canvas to black">Clear</button>
 			<button id="show-grid" title="Display a grid outlining individual pixels">Toggle Grid</button>
 			<button id="toggle-color-button">Toggle Color</button>
+			<h2>OpenSCAD Preview</h2>
 			<div>
-				<pre id="output-textarea" cols=80 rows=20 title="OpenSCAD Output Preview"></pre>
+				<pre id="output-textarea" cols=80 rows=20 title="OpenSCAD Output Preview">
+tex = [];
+				</pre>
 			</div>
 		</div>
 	</body>
