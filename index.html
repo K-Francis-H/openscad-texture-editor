@@ -11,7 +11,8 @@
 						|| !ids.clearButton 
 						|| !ids.toggleGridButton 
 						|| !ids.outputTextarea 
-						|| !ids.toggleColorButton){
+						|| !ids.toggleColorButton
+						|| !ids.resizeCanvasButton){
 						throw new Error("missing ids!");
 					}
 					this.canvas = document.getElementById(ids.canvas);
@@ -55,6 +56,9 @@
 					this.toggleColorButton = document.getElementById(ids.toggleColorButton);
 					this.toggleColorButton.addEventListener("click", this.handleToggleColorButton(this));
 
+					this.resizeCanvasButton = document.getElementById(ids.resizeCanvasButton);
+					this.resizeCanvasButton.addEventListener("click", this.handleResizeButtonClick(this));
+
 					//prevents dragging mouse off of canvas and returning after mouseup
 					var self = this;
 					document.addEventListener("mouseover", function(event){
@@ -68,6 +72,20 @@
 				 * so we pass our Canvas 'this' into these closures as 'self' in order to
 				 * access the fields and methods of the Canvas object
 				 */
+
+				handleResizeButtonClick(self){
+					return function(event){
+						let divisor = window.prompt("Enter new value of N for NxN pixel grid:", self.REAL_WIDTH / self.virtualSize);
+						console.log(divisor);
+						if( isNaN(divisor) ){
+							return; //invalid input, not going to resize canvas
+						}else{
+							self.resize(divisor);
+							//console.log(self.virtualSize);
+							//hmmm now can only color in top left quadrant when size is 40...
+						}
+					}
+				}
 
 				handleToggleColorButton(self){
 					return function(event){
@@ -155,8 +173,14 @@
 						throw new Error('Coordinates ('+xpos+', '+ypos+') are out of bounds!');
 					}
 
-					let virtx = Math.floor(xpos / this.virtualSize);
-					let virty = Math.floor(ypos / this.virtualSize);
+					console.log("xpos: "+xpos);
+					console.log("ypos: "+ypos);
+					console.log("vs: "+this.virtualSize);
+					console.log("vx: "+Math.floor(xpos / this.virtualSize));
+					console.log("vy: "+Math.floor(ypos / this.virtualSize));
+
+					let virtx = Math.floor(xpos / this.pixw);
+					let virty = Math.floor(ypos / this.pixh);
 
 					return [virtx, virty];
 				}
@@ -294,9 +318,10 @@
 					canvas: "canvas",
 					exportButton: "export-button",
 					clearButton: "clear-button",
-					toggleGridButton: "show-grid",
+					toggleGridButton: "show-grid-button",
 					outputTextarea: "output-textarea",
-					toggleColorButton: "toggle-color-button"
+					toggleColorButton: "toggle-color-button",
+					resizeCanvasButton: "resize-canvas-button"
 				};
 				const c = new Canvas(ids, 20);
 				c.clear();
@@ -314,8 +339,9 @@
 			<!-- TODO add color picker, color value setting (for different heights in output), canvas pixel/texture size select -->
 			<button id="export-button" title="Generate OpenSCAD code, show preview, and copy to clipboard">Export</button>
 			<button id="clear-button" title="Reset the canvas to black">Clear</button>
-			<button id="show-grid" title="Display a grid outlining individual pixels">Toggle Grid</button>
+			<button id="show-grid-button" title="Display a grid outlining individual pixels">Toggle Grid</button>
 			<button id="toggle-color-button">Toggle Color</button>
+			<button id="resize-canvas-button">Resize Canvas</button>
 			<h2>OpenSCAD Preview</h2>
 			<div>
 				<pre id="output-textarea" cols=80 rows=20 title="OpenSCAD Output Preview">
