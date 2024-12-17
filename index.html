@@ -38,6 +38,7 @@
 					this.canvas.addEventListener("mousedown", this.handleMouseDownEvent(this));
 					this.canvas.addEventListener("mousemove", this.handleMouseMoveEvent(this));
 					this.canvas.addEventListener("mouseup", this.handleMouseUpEvent(this));
+					document.addEventListener("mouseover", this.handleMouseUpEvent(this));
 
 					this.exportButton = document.getElementById(ids.exportButton);
 					this.exportButton.addEventListener("click", this.handleExportButtonClick(this));
@@ -60,10 +61,8 @@
 					this.resizeCanvasButton.addEventListener("click", this.handleResizeButtonClick(this));
 
 					//prevents dragging mouse off of canvas and returning after mouseup
-					var self = this;
-					document.addEventListener("mouseover", function(event){
-						self.mousedown = false;
-					});
+					//var self = this;
+					
 				}
 
 				/*****************************
@@ -75,14 +74,12 @@
 
 				handleResizeButtonClick(self){
 					return function(event){
-						let divisor = window.prompt("Enter new value of N for NxN pixel grid:", self.REAL_WIDTH / self.virtualSize);
-						console.log(divisor);
+						let divisor = window.prompt("Enter new value of N for NxN pixel grid:", self.virtualSize);
+						//console.log(divisor);
 						if( isNaN(divisor) ){
 							return; //invalid input, not going to resize canvas
 						}else{
 							self.resize(divisor);
-							//console.log(self.virtualSize);
-							//hmmm now can only color in top left quadrant when size is 40...
 						}
 					}
 				}
@@ -173,11 +170,11 @@
 						throw new Error('Coordinates ('+xpos+', '+ypos+') are out of bounds!');
 					}
 
-					console.log("xpos: "+xpos);
-					console.log("ypos: "+ypos);
-					console.log("vs: "+this.virtualSize);
-					console.log("vx: "+Math.floor(xpos / this.virtualSize));
-					console.log("vy: "+Math.floor(ypos / this.virtualSize));
+					//console.log("xpos: "+xpos);
+					//console.log("ypos: "+ypos);
+					//console.log("vs: "+this.virtualSize);
+					//console.log("vx: "+Math.floor(xpos / this.virtualSize));
+					//console.log("vy: "+Math.floor(ypos / this.virtualSize));
 
 					let virtx = Math.floor(xpos / this.pixw);
 					let virty = Math.floor(ypos / this.pixh);
@@ -331,23 +328,26 @@
 				
 			});
 		</script>
+		<title>OpenSCAD Texture Editor</title>
 	</head>
 	<body style="background: #FFFFDD;">
-		<h1>OpenSCAD Texture Editor</h1>
-		<canvas id="canvas" width="400" height="400">HTML5 Canvas Not Supported!</canvas>
-		<div>
-			<!-- TODO add color picker, color value setting (for different heights in output), canvas pixel/texture size select -->
-			<button id="export-button" title="Generate OpenSCAD code, show preview, and copy to clipboard">Export</button>
-			<button id="clear-button" title="Reset the canvas to black">Clear</button>
-			<button id="show-grid-button" title="Display a grid outlining individual pixels">Toggle Grid</button>
-			<button id="toggle-color-button">Toggle Color</button>
-			<button id="resize-canvas-button">Resize Canvas</button>
-			<h2>OpenSCAD Preview</h2>
+		<center>
+			<h1>OpenSCAD Texture Editor</h1>
+			<canvas id="canvas" width="800" height="800">HTML5 Canvas Not Supported!</canvas>
 			<div>
-				<pre id="output-textarea" cols=80 rows=20 title="OpenSCAD Output Preview">
+				<!-- TODO add color picker, color value setting (for different heights in output), canvas pixel/texture size select -->
+				<button id="export-button" title="Generate OpenSCAD code, show preview, and copy to clipboard">Export</button>
+				<button id="clear-button" title="Reset the canvas to black">Clear</button>
+				<button id="show-grid-button" title="Display a grid outlining individual pixels">Toggle Grid</button>
+				<button id="toggle-color-button">Toggle Color</button>
+				<button id="resize-canvas-button">Resize Canvas</button>
+				<h2>OpenSCAD Preview</h2>
+				<div>
+					<pre id="output-textarea" title="OpenSCAD Output Preview">
 tex = [];
-				</pre>
+					</pre>
+				</div>
 			</div>
-		</div>
+		</center>
 	</body>
 </html>
