@@ -170,34 +170,10 @@
 						throw new Error('Coordinates ('+xpos+', '+ypos+') are out of bounds!');
 					}
 
-					//console.log("xpos: "+xpos);
-					//console.log("ypos: "+ypos);
-					//console.log("vs: "+this.virtualSize);
-					//console.log("vx: "+Math.floor(xpos / this.virtualSize));
-					//console.log("vy: "+Math.floor(ypos / this.virtualSize));
-
 					let virtx = Math.floor(xpos / this.pixw);
 					let virty = Math.floor(ypos / this.pixh);
 
 					return [virtx, virty];
-				}
-
-				calcRealPixel(xpos, ypos){
-					if(xpos < 0 || ypos < 0 || xpos >= this.virtualSize || ypos >= this.virtualSize){
-						throw new Error('Coordinates ('+xpos+', '+ypos+') are out of bounds!');
-					}
-
-					let realx = this.pixw * xpos;
-					let realy = this.pixh * ypos;
-					let endx = realx + this.pixw;
-					let endy = realy + this.pixh;
-
-					return {
-						startx: realx,
-						starty: realy,
-						endx: endx,
-						endy: endy
-					};
 				}
 
 				resize(virtualSize){
@@ -341,7 +317,7 @@
 				<button id="show-grid-button" title="Display a grid outlining individual pixels">Toggle Grid</button>
 				<button id="toggle-color-button">Toggle Color</button>
 				<button id="resize-canvas-button">Resize Canvas</button>
-				<h2>OpenSCAD Preview</h2>
+				<h2>Code Preview</h2>
 				<div>
 					<pre id="output-textarea" title="OpenSCAD Output Preview">
 tex = [];
