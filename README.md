@@ -26,7 +26,7 @@ Then simply paste the array into OpenSCAD and use in conjunction with the [BOSL/
 
 ### Spiral Texture with rotate_sweep()
 
-[!Spiral Texture on Sphere](img/spiral_texture_sphere.png)
+![Spiral Texture on Sphere](img/spiral_texture_sphere.png)
 
 ```OpenSCAD
 include <BOSL2/std.scad>
@@ -62,7 +62,7 @@ rotate_sweep(
 
 ### Spiral Texture with linear_sweep()
 
-[!Spiral Texture on Cube](img/spiral_texture_cube.png)
+![Spiral Texture on Cube](img/spiral_texture_cube.png)
 
 ```OpenSCAD
 include <BOSL2/std.scad>
