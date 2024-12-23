@@ -286,6 +286,130 @@
 
 			}//end class Canvas
 
+			class ColorPallet {
+				constructor(containerId, addNewButtonId, defaultColors=[]){
+					this.container = document.getElementById(containerId);
+					this.addNewButton = document.getElementById(addNewButtonId);
+
+					this.addNewButton.addEventListener("click", this.handleAddNewColorButton(this));
+
+					this.colorMap = {
+						"white" : {
+							"color": "#ffffff",
+							"value": 1
+						},
+						"black" : {
+							"color": "#000000",
+							"value": 0
+						}
+					}
+
+					for(let i=0; i < defaultColors.length; i++){
+						console.log(defaultColors[i]);
+						(function(self,i){
+							console.log(defaultColors);
+							console.log(defaultColors[i]);
+							console.log(defaultColors[i].colorPickerId);
+							document.getElementById(defaultColors[i].colorPickerId).addEventListener("change", function(e){
+								document.getElementById(defaultColors[i].radioId).value = e.target.value;
+								//self.getCurrentColor();
+							});
+							document.getElementById(defaultColors[i].radioId).addEventListener("click", function(e){
+								console.log(self.getCurrentColor());
+							})
+						})(this,i);
+					}
+
+
+					this.colorCount = 0;
+				}
+
+				handleAddNewColorButton(self){
+					return function(event){
+						/*EXAMPLE OUTPUT:
+							<div id="color-pallet-item-2">
+								<input title="Color Selector" id="color-picker" type="color" value="#000000">
+								<input title="Set the texture height for this color" id="color-height" type="number" value="0">
+							</div>
+						*/
+
+						//self.getIndex();
+						let scc = self.colorCount;
+
+						self.colorMap["color-"+scc] = {
+							"color": "#ffffff",
+							"value": 1
+						}
+
+						let cont = document.createElement("DIV");
+						cont.setAttribute("class", "color-pallet-item");
+						cont.setAttribute("name", "color-item");
+						cont.id = "pallet-new-color-"+scc;
+
+						let radioButton = document.createElement("INPUT");
+						radioButton.type = "radio";
+						radioButton.id = "radio-new-color-"+scc; 
+						radioButton.name = "color-selection";
+						radioButton.value = "#ffffff";
+						radioButton.addEventListener("click", function(e){
+							console.log(self.getCurrentColor());
+						})
+
+						let colorPicker = document.createElement("INPUT");
+						colorPicker.type = "color";
+						colorPicker.id = "picker-new-color-"+scc; 
+						colorPicker.title = "Color Selector";
+						colorPicker.value = "#ffffff";
+						colorPicker.addEventListener("change", function(e){
+							document.getElementById("radio-new-color-"+scc).value = e.target.value;
+							self.colorMap["color-"+scc].color = e.target.value;
+							console.log(self.colorMap);
+						});
+
+						let numberInput = document.createElement("INPUT");
+						numberInput.type = "number";
+						numberInput.id = "number-new-color-"+scc; 
+						numberInput.value = 1;
+						numberInput.title = "Set the texture height for this color";
+						numberInput.addEventListener("change", function(e){
+							self.colorMap["color-"+scc].value = e.target.value;
+							console.log(self.colorMap);
+						});
+
+						cont.appendChild(radioButton);
+						cont.appendChild(document.createTextNode("\n"));
+						cont.appendChild(colorPicker);
+						cont.appendChild(document.createTextNode("\n"));
+						cont.appendChild(numberInput);
+
+						self.container.appendChild(cont);
+						self.colorCount++;
+					}
+				}
+
+				getCurrentColor(){
+					console.log("getCurrentColor()");
+					let radio = document.querySelector('input[name="color-selection"]:checked');
+					if(radio.id == "black"){
+						return {
+							"color": radio.value,
+							"value": document.getElementById("black-color-height").value
+						}
+					}else if(radio.id == "white"){
+						return {
+							"color": radio.value,
+							"value": document.getElementById("white-color-height").value
+						}
+					}else{
+						let index = radio.id.replace("radio-new-color-", "");
+						return {
+							"color": radio.value,
+							"value": document.getElementById("number-new-color-"+index).value
+						}
+					}
+				}
+			}
+
 			document.addEventListener("DOMContentLoaded", function(){
 				const ids = {
 					canvas: "canvas",
@@ -301,10 +425,30 @@
 
 				//show the default (empty) texture array
 				document.getElementById("output-textarea").innerText = c.exportOpenSCAD();
+
+				const cp = new ColorPallet(
+					"color-pallet-cont", 
+					"add-color-button",
+					[
+						{
+							"colorPickerId": "white-color-picker",
+							"radioId": "white"
+						},
+						{
+							"colorPickerId": "black-color-picker",
+							"radioId": "black"
+						}
+					]
+				);
 				
 			});
 		</script>
 		<title>OpenSCAD Texture Editor</title>
+		<style>
+			.color-pallet-item {
+				margin: 5px;
+			}
+		</style>
 	</head>
 	<body style="background: #FFFFDD; margin: 0px;">
 		<a href="https://github.com/K-Francis-H/openscad-texture-editor"><img decoding="async" width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_left_darkblue_121621.png" class="attachment-full size-full" alt="Fork me on GitHub" loading="lazy"></a>
@@ -312,12 +456,24 @@
 			<h1>OpenSCAD Texture Editor</h1>
 			<canvas id="canvas" width="800" height="800">HTML5 Canvas Not Supported!</canvas>
 			<div>
-				<!-- TODO add color picker, color value setting (for different heights in output), canvas pixel/texture size select -->
 				<button id="export-button" title="Generate OpenSCAD code, show preview, and copy to clipboard">Export</button>
 				<button id="clear-button" title="Reset the canvas to black">Clear</button>
 				<button id="show-grid-button" title="Display a grid outlining individual pixels">Toggle Grid</button>
 				<button id="toggle-color-button">Toggle Color</button>
 				<button id="resize-canvas-button">Resize Canvas</button>
+				<div id="color-pallet-cont">
+					<div id="color-white" name="color-item" class="color-pallet-item">
+						<input type="radio" id="white" name="color-selection" value="#ffffff">
+						<input title="Color Selector" id="white-color-picker" type="color" value="#ffffff">
+						<input title="Set the texture height for this color" id="white-color-height" type="number" value="1">
+					</div>
+					<div id="color-black" name="color-item" class="color-pallet-item">
+						<input type="radio" id="black" name="color-selection" value="#000000">
+						<input title="Color Selector" id="black-color-picker" type="color" value="#000000">
+						<input title="Set the texture height for this color" id="black-color-height" type="number" value="0">
+					</div>
+				</div>
+				<button id="add-color-button">Add Color</button>
 				<h2>Code Preview</h2>
 				<div>
 					<pre id="output-textarea" title="OpenSCAD Output Preview">
