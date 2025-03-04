@@ -54,8 +54,6 @@
 					//TODO add color select
 					//associate color with a number
 					this.color = "white";
-					this.toggleColorButton = document.getElementById(ids.toggleColorButton);
-					this.toggleColorButton.addEventListener("click", this.handleToggleColorButton(this));
 
 					this.resizeCanvasButton = document.getElementById(ids.resizeCanvasButton);
 					this.resizeCanvasButton.addEventListener("click", this.handleResizeButtonClick(this));
@@ -83,16 +81,6 @@
 						}else{
 							self.resize(divisor);
 						}
-					}
-				}
-
-				handleToggleColorButton(self){
-					return function(event){
-						self.color = self.color === "white" ? "black" : "white";
-
-						//this -> toggle color button element
-						this.style.color = self.color === "white" ? "black" : "white";
-						this.style.backgroundColor = self.color;
 					}
 				}
 
@@ -455,7 +443,7 @@
 				<button id="export-button" title="Generate OpenSCAD code, show preview, and copy to clipboard">Export</button>
 				<button id="clear-button" title="Reset the canvas to black">Clear</button>
 				<button id="show-grid-button" title="Display a grid outlining individual pixels">Toggle Grid</button>
-				<button id="toggle-color-button">Toggle Color</button>
+				<!--<button id="toggle-color-button">Toggle Color</button>-->
 				<button id="resize-canvas-button">Resize Canvas</button>
 				<div id="color-pallet-cont">
 					<div id="color-white" name="color-item" class="color-pallet-item">
