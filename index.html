@@ -196,15 +196,17 @@
 					}
 				}
 
-				paintPixel(xpos, ypos){
+				paintPixel(xpos, ypos, color){
 					let realx = xpos * this.pixw;
 					let realy = ypos * this.pixh;
-					let color = this.colorPallet.getCurrentColor();
+					let useColor = color ? color : this.colorPallet.getCurrentColor();
 
-					this.ctx.fillStyle = color.color;
+					
+					this.ctx.fillStyle = useColor.color;
+
 					this.ctx.fillRect(realx, realy, this.pixw, this.pixh);
 
-					this.state[xpos][ypos] = color.value;
+					this.state[xpos][ypos] = useColor.value;
 				}
 
 				exportOpenSCAD(){
@@ -260,8 +262,9 @@
 						for(let j=0; j < this.state[i].length; j++){
 							if(this.state[i][j] > 0){
 								//TODO then determine which color so we can have different heights
-								this.color = "white";
-								this.paintPixel(i,j);
+								this.color = this.colorPallet.getColorFromValue(this.state[i][j]);//"white";
+								//console.log(i+" "+j+" "+this.color);
+								this.paintPixel(i,j, this.color);
 							}
 						}
 					}
@@ -370,6 +373,8 @@
 
 						self.container.appendChild(cont);
 						self.colorCount++;
+
+						//console.log(self.getColorFromValue())
 					}
 				}
 
@@ -393,6 +398,21 @@
 							"value": document.getElementById("number-new-color-"+index).value
 						}
 					}
+				}
+
+				getColorFromValue(value){
+					let colors = Object.keys(this.colorMap);
+					for(let i=0; i < colors.length; i++){
+						let c = this.colorMap[colors[i]];
+						if(c.value == value){
+							return c;
+						}
+					}
+					//default to black
+					return {
+						color: "#000000",
+						value: 0
+					};
 				}
 			}
 
@@ -422,6 +442,9 @@
 				);
 				const c = new Canvas(ids, 20, cp);
 				c.clear();
+
+				console.log(cp.getColorFromValue(0));
+				console.log(cp.getColorFromValue(1));
 
 				//show the default (empty) texture array
 				document.getElementById("output-textarea").innerText = c.exportOpenSCAD();
