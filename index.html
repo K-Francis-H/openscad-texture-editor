@@ -75,10 +75,10 @@
 				handleResizeButtonClick(self){
 					return function(event){
 						let divisor = window.prompt("Enter new value of N for NxN pixel grid:", self.virtualSize);
-						//console.log(divisor);
-						if( isNaN(divisor) ){
-							return; //invalid input, not going to resize canvas
-						}else{
+						//console.log("divisor: "+divisor+" isNan()? "+isNaN(divisor) );
+						//console.log(!isNaN(divisor))
+						if( divisor && !isNaN(divisor) ){
+							console.log("resizing")
 							self.resize(divisor);
 						}
 					}
